@@ -2,7 +2,7 @@ const express = require('express')
 const bcrypt = require('bcryptjs')
 const jsonWebToken = require('jsonwebtoken')
 const isAuthenticated = require('../middleware/isAuthenticated')
-const User = require('./../models/User.model')
+const User = require('../models/User.model')
 const router = express.Router()
 
 // トークン作成用
