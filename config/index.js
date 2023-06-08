@@ -10,7 +10,7 @@ module.exports = (app) => {
   app.set('trust proxy', 1)
   app.use(
     cors({
-      origin: [FRONTEND_URL],
+      origin: FRONTEND_URL,
     })
   )
   app.use((req, res, next) => {
