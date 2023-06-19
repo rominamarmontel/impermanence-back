@@ -1,5 +1,6 @@
 const router = require('express').Router()
-const Film = require('../models/Film.model')
+const FilmFr = require('../models/FilmFr.model')
+const FilmEn = require('../models/FilmEn.model')
 const fileUpload = require('../config/cloudinary-config')
 const isAuthenticated = require('../middleware/isAuthenticated')
 
@@ -8,10 +9,16 @@ const isAuthenticated = require('../middleware/isAuthenticated')
 // @access Public
 router.get('/', async (req, res, next) => {
   try {
-    const films = await Film.find().sort({
-      updatedAt: -1,
-    })
-    res.json(films)
+    const films = await FilmFr.find()
+      .sort({
+        updatedAt: -1,
+      })
+      .populate({
+        path: 'english',
+        model: 'FilmEn',
+      })
+    const filteredFilms = films.filter((film) => film.english.length > 0)
+    res.json(filteredFilms)
   } catch (error) {
     next(error)
   }
@@ -20,13 +27,31 @@ router.get('/', async (req, res, next) => {
 // @desc   Get one Film
 // @route  GET /api/Films/:id
 // @access Public
-router.get('/:id', async (req, res, next) => {
+router.get('/:frenchId', async (req, res, next) => {
   try {
-    const getFilm = await Film.findById(req.params.id)
+    const { frenchId } = req.params
+    const getFilm = await FilmFr.findById(frenchId).populate({
+      path: 'english',
+      model: 'FilmEn',
+    })
     if (!getFilm) {
       return res.status(404).json({ error: 'Film not found' })
     }
-    res.json({ getFilm })
+    res.json(getFilm)
+  } catch (error) {
+    next(error)
+  }
+})
+
+router.get('/:frenchId/en', async (req, res, next) => {
+  try {
+    const { frenchId } = req.params
+    const englishFilm = await FilmEn.findOne({ french: frenchId })
+    if (!englishFilm) {
+      return res.status(404).json({ message: 'English movie not found' })
+    }
+
+    return res.json(englishFilm)
   } catch (error) {
     next(error)
   }
@@ -39,21 +64,69 @@ const path = require('path')
 router.post(
   '/create',
   isAuthenticated,
-  fileUpload.fields([{ name: 'images' }, { name: 'telechargement' }]),
+  fileUpload.fields([{ name: 'images' }, { name: 'download' }]),
   async (req, res, next) => {
     try {
-      const filmToCreate = { ...req.body }
+      let {
+        title,
+        originalTitle,
+        copyright,
+        directedBy,
+        producedBy,
+        author,
+        format,
+        duration,
+        synopsis,
+        partner,
+        createdYear,
+        festivalsAndAwards,
+        distribution,
+        internationalSales,
+        stageOfProduction,
+        genre,
+        category,
+        videoOnDemand,
+        crew,
+        download,
+        images,
+      } = req.body
+
       if (req.files) {
-        console.log(req.files)
         if (req.files.images && req.files.images[0]) {
-          filmToCreate.images = req.files.images.map((file) => file.path)
+          images = req.files.images.map((file) => file.path)
         }
-        if (req.files.telechargement && req.files.telechargement[0]) {
-          filmToCreate.telechargement = req.files.telechargement[0].path
+        if (req.files.download && req.files.download[0]) {
+          download = req.files.download[0].path
         }
       }
-      const createdFilm = await Film.create(filmToCreate)
+
+      const createdFilm = await FilmFr.create({
+        title,
+        originalTitle,
+        copyright,
+        directedBy,
+        producedBy,
+        author,
+        format,
+        duration,
+        synopsis,
+        partner,
+        createdYear,
+        festivalsAndAwards,
+        distribution,
+        internationalSales,
+        stageOfProduction,
+        genre,
+        category,
+        videoOnDemand,
+        crew,
+        download,
+        images,
+        englishFilms: [],
+      })
+
       res.status(201).json(createdFilm)
+      console.log(createdFilm)
     } catch (error) {
       console.error(error)
       res
@@ -63,18 +136,102 @@ router.post(
   }
 )
 
+router.post(
+  '/create/en',
+  isAuthenticated,
+  fileUpload.fields([{ name: 'images' }, { name: 'download' }]),
+  async (req, res, next) => {
+    try {
+      const {
+        title,
+        originalTitle,
+        copyright,
+        directedBy,
+        producedBy,
+        author,
+        format,
+        duration,
+        synopsis,
+        partner,
+        createdYear,
+        festivalsAndAwards,
+        distribution,
+        internationalSales,
+        stageOfProduction,
+        genre,
+        category,
+        videoOnDemand,
+        crew,
+        download,
+        images,
+        frenchId,
+      } = req.body
+      console.log('frenchId', frenchId)
+      const filmToCreate = {
+        title,
+        originalTitle,
+        copyright,
+        directedBy,
+        producedBy,
+        author,
+        format,
+        duration,
+        synopsis,
+        partner,
+        createdYear,
+        festivalsAndAwards,
+        distribution,
+        internationalSales,
+        stageOfProduction,
+        genre,
+        category,
+        videoOnDemand,
+        crew,
+        download,
+        images,
+        french: frenchId,
+      }
+
+      if (req.files) {
+        if (req.files.images && req.files.images[0]) {
+          filmToCreate.images = req.files.images.map((file) => file.path)
+        }
+        if (req.files.download && req.files.download[0]) {
+          filmToCreate.download = req.files.download[0].path
+        }
+      }
+
+      const newEnglishFilm = await FilmEn.create(filmToCreate)
+      console.log(newEnglishFilm)
+      const updatedFrenchFilm = await FilmFr.findByIdAndUpdate(
+        frenchId,
+        { $push: { english: newEnglishFilm._id } },
+        { new: true }
+      )
+      res.status(201).json(updatedFrenchFilm)
+    } catch {
+      ;(error) => {
+        console.error(error)
+        res
+          .status(500)
+          .json({ message: 'An error occurred during film creation' })
+      }
+    }
+  }
+)
+
 // @desc   Edit & Update one Film
 // @route  patch /api/Films/:id
 // @access isAdmin
 router.patch(
-  '/edit/:id',
+  '/edit/:frenchId',
   isAuthenticated,
-  fileUpload.fields([{ name: 'images' }, { name: 'telechargement' }]),
+  fileUpload.fields([{ name: 'images' }, { name: 'download' }]),
   async (req, res, next) => {
     try {
-      const { id } = req.params
+      const { frenchId } = req.params
       const FilmToUpdate = { ...req.body }
-      const existingFilm = await Film.findById(id) // 既存のフィルムデータを取得
+      const existingFilm = await FilmFr.findById(frenchId)
 
       if (req.files) {
         if (req.files.images && req.files.images[0]) {
@@ -82,13 +239,17 @@ router.patch(
         } else if (!req.files.images) {
           FilmToUpdate.images = existingFilm.images
         }
-        if (req.files.telechargement) {
-          FilmToUpdate.telechargement = req.files.telechargement[0].path
+        if (req.files.download) {
+          FilmToUpdate.download = req.files.download[0].path
         }
       }
-      const updatedFilm = await Film.findByIdAndUpdate(id, FilmToUpdate, {
-        new: true,
-      })
+      const updatedFilm = await FilmFr.findByIdAndUpdate(
+        frenchId,
+        FilmToUpdate,
+        {
+          new: true,
+        }
+      )
       res.status(202).json(updatedFilm)
     } catch (error) {
       console.error(error)
@@ -99,16 +260,56 @@ router.patch(
   }
 )
 
+router.patch(
+  '/edit/:frenchId/en',
+  isAuthenticated,
+  fileUpload.fields([{ name: 'images' }, { name: 'download' }]),
+  async (req, res, next) => {
+    try {
+      const { frenchId } = req.params
+      const FilmToUpdate = { ...req.body }
+      const existingFilm = await FilmEn.findOne({ french: frenchId })
+      if (req.files) {
+        if (req.files.images && req.files.images[0]) {
+          FilmToUpdate.images = req.files.images.map((file) => file.path)
+        } else {
+          FilmToUpdate.images = existingFilm.images || []
+        }
+        if (req.files.download) {
+          FilmToUpdate.download = req.files.download[0].path
+        }
+      } else {
+        FilmToUpdate.images = existingFilm.images || []
+      }
+
+      const updatedFilm = await FilmEn.findByIdAndUpdate(
+        existingFilm._id,
+        FilmToUpdate,
+        {
+          new: true,
+        }
+      )
+
+      res.status(202).json(updatedFilm)
+    } catch (error) {
+      console.error(error)
+      res.status(500).json({ message: 'An error occurred during film update' })
+    }
+  }
+)
+
 // @desc   Delete one Film
 // @route  patch /api/Films/:id
 // @access isAdmin
-router.delete('/edit/:id', isAuthenticated, async (req, res, next) => {
-  try {
-    await Film.findByIdAndDelete(req.params.id)
-    res.sendStatus(204)
-  } catch (error) {
-    next(error)
-  }
+router.delete('/edit/:frenchId', isAuthenticated, async (req, res, next) => {
+  const { frenchId } = req.params
+  FilmFr.findByIdAndRemove(frenchId)
+    .then(() =>
+      res.json({
+        message: `Project with ${frenchId} is removed successfully.`,
+      })
+    )
+    .catch((error) => res.json(error))
 })
 
 module.exports = router

@@ -1,12 +1,14 @@
 const { Schema, model } = require('mongoose')
 
-const filmEnSchema = new Schema(
+const filmFrSchema = new Schema(
   {
     title: String,
-    french: {
-      type: Schema.Types.ObjectId,
-      ref: 'FilmFr',
-    },
+    english: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'FilmEn',
+      },
+    ],
     originalTitle: String,
     copyright: String,
     directedBy: String,
@@ -23,11 +25,11 @@ const filmEnSchema = new Schema(
     stageOfProduction: String,
     genre: {
       type: String,
-      enum: ['documentary', 'drama', 'science-fiction', 'comedy'],
+      enum: ['documentaire', 'drama', 'science-fiction', 'comedie'],
     },
     category: {
       type: String,
-      enum: ['work-in-progress', 'production', 'distribution', 'programmation'],
+      enum: ['travail-en-cours', 'production', 'distribution', 'programmation'],
     },
     videoOnDemand: String,
     crew: String,
@@ -43,6 +45,6 @@ const filmEnSchema = new Schema(
   }
 )
 
-const FilmEn = model('FilmEn', filmEnSchema)
+const FilmFr = model('FilmFr', filmFrSchema)
 
-module.exports = FilmEn
+module.exports = FilmFr

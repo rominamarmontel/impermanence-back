@@ -5,8 +5,8 @@ router.get('/', (req, res, next) => {
 })
 
 router.use('/films', require('./film.routes'))
+router.use('/en/films', require('./filmEn.routes'))
 router.use('/auth', require('./auth.routes'))
-router.use('/en', require('./filmEn.routes'))
 router.use((error, req, res, next) => {
   console.error(error.stack)
   res.status(500).send('Something broke!')

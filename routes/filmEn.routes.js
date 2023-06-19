@@ -3,23 +3,21 @@ const filmEn = require('../models/FilmEn.model')
 const fileUpload = require('../config/cloudinary-config')
 const isAuthenticated = require('../middleware/isAuthenticated')
 
-// @desc   Get all Films
-// @route  GET /api/Films
-// @access Public
-router.get('/films', async (req, res, next) => {
+router.get('/', async (req, res, next) => {
   try {
-    const films = await FilmEn.find().sort({
-      updatedAt: -1,
-    })
+    const films = await FilmFr.find()
+      .populate({
+        path: 'english',
+        model: 'FilmEn',
+      })
+      .sort({ createdAt: -1 })
+
     res.json(films)
   } catch (error) {
     next(error)
   }
 })
 
-// @desc   Get one Film
-// @route  GET /api/Films/:id
-// @access Public
 router.get('/films/:id', async (req, res, next) => {
   try {
     const oneFilm = await FilmEn.findById(req.params.id)
@@ -32,11 +30,9 @@ router.get('/films/:id', async (req, res, next) => {
   }
 })
 
-// @desc   Create one Film
-// @route  post /api/Films/create
-// @access isAdmin
 const path = require('path')
 const FilmEn = require('../models/FilmEn.model')
+const FilmFr = require('../models/FilmFr.model')
 router.post(
   '/films/create',
   isAuthenticated,
@@ -63,9 +59,6 @@ router.post(
   }
 )
 
-// @desc   Edit & Update one Film
-// @route  patch /api/Films/:id
-// @access isAdmin
 router.patch(
   '/films/edit/:id',
   isAuthenticated,
