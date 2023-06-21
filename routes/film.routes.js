@@ -9,16 +9,12 @@ const isAuthenticated = require('../middleware/isAuthenticated')
 // @access Public
 router.get('/', async (req, res, next) => {
   try {
-    const films = await FilmFr.find()
-      .sort({
-        updatedAt: -1,
-      })
-      .populate({
-        path: 'english',
-        model: 'FilmEn',
-      })
-    const filteredFilms = films.filter((film) => film.english.length > 0)
-    res.json(filteredFilms)
+    const films = await FilmFr.find().sort({ updatedAt: -1 }).populate({
+      path: 'english',
+      model: 'FilmEn',
+    })
+
+    res.json(films)
   } catch (error) {
     next(error)
   }
@@ -46,11 +42,11 @@ router.get('/:frenchId', async (req, res, next) => {
 router.get('/:frenchId/en', async (req, res, next) => {
   try {
     const { frenchId } = req.params
-    const englishFilm = await FilmEn.findOne({ french: frenchId })
-    if (!englishFilm) {
-      return res.status(404).json({ message: 'English movie not found' })
+    const frenchFilm = await FilmFr.findById(frenchId).populate('english')
+    if (!frenchFilm) {
+      return res.status(404).json({ message: 'French movie not found' })
     }
-
+    const englishFilm = frenchFilm.english
     return res.json(englishFilm)
   } catch (error) {
     next(error)

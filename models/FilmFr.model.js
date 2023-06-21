@@ -3,12 +3,10 @@ const { Schema, model } = require('mongoose')
 const filmFrSchema = new Schema(
   {
     title: String,
-    english: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'FilmEn',
-      },
-    ],
+    english: {
+      type: Schema.Types.ObjectId,
+      ref: 'FilmEn',
+    },
     originalTitle: String,
     copyright: String,
     directedBy: String,
