@@ -27,7 +27,7 @@ const filmFrSchema = new Schema(
     },
     category: {
       type: String,
-      enum: ['travail-en-cours', 'production', 'distribution', 'programmation'],
+      enum: ['encours', 'production', 'distribution', 'programmation'],
     },
     videoOnDemand: String,
     crew: String,
