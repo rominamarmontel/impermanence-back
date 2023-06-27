@@ -13,7 +13,6 @@ router.get('/', async (req, res, next) => {
       path: 'english',
       model: 'FilmEn',
     })
-
     res.json(films)
   } catch (error) {
     next(error)
@@ -120,9 +119,7 @@ router.post(
         images,
         englishFilms: [],
       })
-
       res.status(201).json(createdFilm)
-      console.log(createdFilm)
     } catch (error) {
       console.error(error)
       res
@@ -162,7 +159,6 @@ router.post(
         images,
         frenchId,
       } = req.body
-      console.log('frenchId', frenchId)
       const filmToCreate = {
         title,
         originalTitle,
@@ -285,7 +281,6 @@ router.patch(
           new: true,
         }
       )
-
       res.status(202).json(updatedFilm)
     } catch (error) {
       console.error(error)

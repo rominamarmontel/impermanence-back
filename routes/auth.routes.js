@@ -5,12 +5,6 @@ const isAuthenticated = require('../middleware/isAuthenticated')
 const User = require('../models/User.model')
 const router = express.Router()
 
-// トークン作成用
-// const crypto = require('crypto')
-// const tokenLength = 32
-// const token = crypto.randomBytes(tokenLength).toString('hex')
-// console.log(token)
-
 router.post('/signup', async (req, res, next) => {
   const { username, email, password } = req.body
 
