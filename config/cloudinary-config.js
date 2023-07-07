@@ -12,7 +12,16 @@ const storage = new CloudinaryStorage({
   cloudinary,
   params: {
     resource_type: 'auto',
-    allowed_formats: ['jpg', 'png', 'gif', 'webp', 'jpeg', 'pdf', 'tiff'],
+    allowed_formats: [
+      'jpg',
+      'png',
+      'gif',
+      'webp',
+      'jpeg',
+      'pdf',
+      'tiff',
+      'avif',
+    ],
     folder: 'impermanenceDB',
     fieldSize: 10 * 1024 * 1024,
   },
