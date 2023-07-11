@@ -59,7 +59,11 @@ const path = require('path')
 router.post(
   '/create',
   isAuthenticated,
-  fileUpload.fields([{ name: 'images' }, { name: 'download' }]),
+  fileUpload.fields([
+    { name: 'thumbnailImages' },
+    { name: 'detailImages' },
+    { name: 'download' },
+  ]),
   async (req, res, next) => {
     try {
       let {
@@ -83,12 +87,17 @@ router.post(
         videoOnDemand,
         crew,
         download,
-        images,
       } = req.body
 
+      let thumbnailImages = []
+      let detailImages = []
+
       if (req.files) {
-        if (req.files.images && req.files.images[0]) {
-          images = req.files.images.map((file) => file.path)
+        if (req.files.thumbnailImages && req.files.thumbnailImages[0]) {
+          thumbnailImages = req.files.thumbnailImages.map((file) => file.path)
+        }
+        if (req.files.detailImages && req.files.detailImages[0]) {
+          detailImages = req.files.detailImages.map((file) => file.path)
         }
         if (req.files.download && req.files.download[0]) {
           download = req.files.download[0].path
@@ -116,10 +125,12 @@ router.post(
         videoOnDemand,
         crew,
         download,
-        images,
         englishFilms: [],
+        thumbnailImages,
+        detailImages,
       })
       res.status(201).json(createdFilm)
+      console.log(createdFilm)
     } catch (error) {
       console.error(error)
       res
@@ -132,7 +143,11 @@ router.post(
 router.post(
   '/create/en',
   isAuthenticated,
-  fileUpload.fields([{ name: 'images' }, { name: 'download' }]),
+  fileUpload.fields([
+    { name: 'thumbnailImages' },
+    { name: 'detailImages' },
+    { name: 'download' },
+  ]),
   async (req, res, next) => {
     try {
       const {
@@ -156,9 +171,24 @@ router.post(
         videoOnDemand,
         crew,
         download,
-        images,
         frenchId,
       } = req.body
+
+      let thumbnailImages = []
+      let detailImages = []
+
+      if (req.files) {
+        if (req.files.thumbnailImages && req.files.thumbnailImages[0]) {
+          thumbnailImages = req.files.thumbnailImages.map((file) => file.path)
+        }
+        if (req.files.detailImages && req.files.detailImages[0]) {
+          detailImages = req.files.detailImages.map((file) => file.path)
+        }
+        if (req.files.download && req.files.download[0]) {
+          filmToCreate.download = req.files.download[0].path
+        }
+      }
+
       const filmToCreate = {
         title,
         originalTitle,
@@ -180,17 +210,9 @@ router.post(
         videoOnDemand,
         crew,
         download,
-        images,
+        thumbnailImages,
+        detailImages,
         french: frenchId,
-      }
-
-      if (req.files) {
-        if (req.files.images && req.files.images[0]) {
-          filmToCreate.images = req.files.images.map((file) => file.path)
-        }
-        if (req.files.download && req.files.download[0]) {
-          filmToCreate.download = req.files.download[0].path
-        }
       }
 
       const newEnglishFilm = await FilmEn.create(filmToCreate)
@@ -218,7 +240,11 @@ router.post(
 router.patch(
   '/edit/:frenchId',
   isAuthenticated,
-  fileUpload.fields([{ name: 'images' }, { name: 'download' }]),
+  fileUpload.fields([
+    { name: 'thumbnailImages' },
+    { name: 'detailImages' },
+    { name: 'download' },
+  ]),
   async (req, res, next) => {
     try {
       const { frenchId } = req.params
@@ -226,10 +252,19 @@ router.patch(
       const existingFilm = await FilmFr.findById(frenchId)
 
       if (req.files) {
-        if (req.files.images && req.files.images[0]) {
-          FilmToUpdate.images = req.files.images.map((file) => file.path)
-        } else if (!req.files.images) {
-          FilmToUpdate.images = existingFilm.images
+        if (req.files.thumbnailImages && req.files.thumbnailImages[0]) {
+          FilmToUpdate.thumbnailImages = req.files.thumbnailImages.map(
+            (file) => file.path
+          )
+        } else if (!req.files.thumbnailImages) {
+          FilmToUpdate.thumbnailImages = existingFilm.thumbnailImages
+        }
+        if (req.files.detailImages && req.files.detailImages[0]) {
+          FilmToUpdate.detailImages = req.files.detailImages.map(
+            (file) => file.path
+          )
+        } else if (!req.files.detailImages) {
+          FilmToUpdate.detailImages = existingFilm.detailImages
         }
         if (req.files.download) {
           FilmToUpdate.download = req.files.download[0].path
@@ -255,23 +290,37 @@ router.patch(
 router.patch(
   '/edit/:frenchId/en',
   isAuthenticated,
-  fileUpload.fields([{ name: 'images' }, { name: 'download' }]),
+  fileUpload.fields([
+    { name: 'thumbnailImages' },
+    { name: 'detailImages' },
+    { name: 'download' },
+  ]),
   async (req, res, next) => {
     try {
       const { frenchId } = req.params
       const FilmToUpdate = { ...req.body }
       const existingFilm = await FilmEn.findOne({ french: frenchId })
       if (req.files) {
-        if (req.files.images && req.files.images[0]) {
-          FilmToUpdate.images = req.files.images.map((file) => file.path)
-        } else {
-          FilmToUpdate.images = existingFilm.images || []
+        if (req.files.thumbnailImages && req.files.thumbnailImages[0]) {
+          FilmToUpdate.thumbnailImages = req.files.thumbnailImages.map(
+            (file) => file.path
+          )
+        } else if (!req.files.thumbnailImages) {
+          FilmToUpdate.thumbnailImages = existingFilm.thumbnailImages
+        }
+        if (req.files.detailImages && req.files.detailImages[0]) {
+          FilmToUpdate.detailImages = req.files.detailImages.map(
+            (file) => file.path
+          )
+        } else if (!req.files.detailImages) {
+          FilmToUpdate.detailImages = existingFilm.detailImages
         }
         if (req.files.download) {
           FilmToUpdate.download = req.files.download[0].path
         }
       } else {
-        FilmToUpdate.images = existingFilm.images || []
+        FilmToUpdate.thumbnailImages = existingFilm.thumbnailImages || []
+        FilmToUpdate.detailImages = existingFilm.detailImages || []
       }
 
       const updatedFilm = await FilmEn.findByIdAndUpdate(

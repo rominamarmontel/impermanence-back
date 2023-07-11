@@ -27,7 +27,8 @@ const storage = new CloudinaryStorage({
   },
 })
 const fileUpload = multer({ storage }).fields([
-  { name: 'images', maxCount: 3 },
+  { name: 'thumbnailImages', maxCount: 1 },
+  { name: 'detailImages', maxCount: 3 },
   { name: 'download', maxCount: 1 },
 ])
 

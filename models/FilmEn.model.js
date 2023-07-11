@@ -32,7 +32,12 @@ const filmEnSchema = new Schema(
     videoOnDemand: String,
     crew: String,
     download: String,
-    images: [
+    thumbnailImages: [
+      {
+        type: String,
+      },
+    ],
+    detailImages: [
       {
         type: String,
       },
