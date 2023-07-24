@@ -9,15 +9,17 @@ router.post('/signup', async (req, res, next) => {
   const { username, email, password } = req.body
 
   if (!username || !email || !password) {
-    return res
-      .status(400)
-      .json({ message: 'Please provide username, email and password' })
+    return sendErrorResponse(
+      res,
+      400,
+      'Please provide username, email and password'
+    )
   }
 
   try {
     const foundUser = await User.findOne({ username: username })
     if (foundUser) {
-      return res.status(400).json({ message: 'This username is already taken' })
+      return sendErrorResponse(res, 400, 'This username is already taken')
     }
 
     const generatedSalt = await bcrypt.genSalt(10)
@@ -30,29 +32,25 @@ router.post('/signup', async (req, res, next) => {
     })
     return res.status(201).json({ message: 'The user was created.' })
   } catch (error) {
-    return res
-      .status(500)
-      .json({ message: 'Something went wrong during signup', error })
+    return sendErrorResponse(res, 500, 'TSomething went wrong during signup')
   }
 })
 
 router.post('/login', async (req, res, next) => {
   const { email, password } = req.body
   if (!email || !password) {
-    return res
-      .status(400)
-      .json({ message: 'Please provide username and password' })
+    return sendErrorResponse(res, 400, 'Please provide username and password')
   }
 
   try {
     const foundUser = await User.findOne({ email }).select('password')
     if (!foundUser) {
-      return res.status(401).json({ message: 'Wrong credentials' })
+      return sendErrorResponse(res, 401, 'User not found')
     }
 
     const matchingPasswords = await bcrypt.compare(password, foundUser.password)
     if (!matchingPasswords) {
-      return res.status(401).json({ message: 'Wrong credentials' })
+      return sendErrorResponse(res, 401, 'Wrong credentials')
     }
 
     const token = jsonWebToken.sign(
@@ -72,5 +70,9 @@ router.post('/login', async (req, res, next) => {
 router.get('/verify', isAuthenticated, async (req, res, next) => {
   res.json(req.user)
 })
+
+function sendErrorResponse(res, status, message) {
+  return res.status(status).json({ error: true, message: message })
+}
 
 module.exports = router
