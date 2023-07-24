@@ -14,7 +14,6 @@ router.get('/', async (req, res, next) => {
       .populate({
         path: 'english',
         model: 'FilmEn',
-        select: 'title directedBy category thumbnailImages',
       })
     res.json(films)
   } catch (error) {

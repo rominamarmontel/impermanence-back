@@ -8,7 +8,6 @@ router.get('/', async (req, res, next) => {
       .populate({
         path: 'french',
         model: 'FilmFr',
-        select: 'title directedBy category thumbnailImages',
       })
     res.json(films)
   } catch (error) {
