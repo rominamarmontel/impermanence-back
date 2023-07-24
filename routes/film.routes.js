@@ -9,12 +9,10 @@ const isAuthenticated = require('../middleware/isAuthenticated')
 // @access Public
 router.get('/', async (req, res, next) => {
   try {
-    const films = await FilmFr.find()
-      .select('title directedBy category thumbnailImages')
-      .populate({
-        path: 'english',
-        model: 'FilmEn',
-      })
+    const films = await FilmFr.find().populate({
+      path: 'english',
+      model: 'FilmEn',
+    })
     res.json(films)
   } catch (error) {
     next(error)
