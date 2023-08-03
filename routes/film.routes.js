@@ -25,10 +25,11 @@ router.get('/', async (req, res, next) => {
 router.get('/:frenchId', async (req, res, next) => {
   try {
     const { frenchId } = req.params
-    const getFilm = await FilmFr.findById(frenchId).populate({
-      path: 'english',
-      model: 'FilmEn',
-    })
+    const getFilm = await FilmFr.findById(frenchId)
+    // const getFilm = await FilmFr.findById(frenchId).populate({
+    //   path: 'english',
+    //   model: 'FilmEn',
+    // })
     if (!getFilm) {
       return res.status(404).json({ error: 'Film not found' })
     }

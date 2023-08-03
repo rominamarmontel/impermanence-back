@@ -47,7 +47,6 @@ const filmFrSchema = new Schema(
     timestamps: true,
   }
 )
-
 const FilmFr = model('FilmFr', filmFrSchema)
 
 module.exports = FilmFr
