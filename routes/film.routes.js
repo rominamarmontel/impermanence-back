@@ -9,7 +9,21 @@ const isAuthenticated = require('../middleware/isAuthenticated')
 // @access Public
 router.get('/', async (req, res, next) => {
   try {
-    const films = await FilmFr.find()
+    const { title, directedBy, category, thumbnailImages } = req.query
+    let query = {}
+    if (title) {
+      query.title = title
+    }
+    if (directedBy) {
+      query.directedBy = directedBy
+    }
+    if (category) {
+      query.category = category
+    }
+    if (thumbnailImages) {
+      query.thumbnailImages = thumbnailImages
+    }
+    const films = await FilmFr.find(query)
     res.json(films)
   } catch (error) {
     next(error)
