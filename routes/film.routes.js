@@ -4,9 +4,37 @@ const FilmEn = require('../models/FilmEn.model')
 const fileUpload = require('../config/cloudinary-config')
 const isAuthenticated = require('../middleware/isAuthenticated')
 
+function requestTimeLogger(req, res, next) {
+  const startTime = new Date()
+
+  res.on('finish', () => {
+    const endTime = new Date()
+    const elapsedTime = endTime - startTime
+    console.log(`Request to ${req.method} ${req.url} took ${elapsedTime} ms`)
+  })
+
+  next()
+}
+
+router.use(requestTimeLogger)
+
 // @desc   Get all Films
 // @route  GET /api/Films
 // @access Public
+// router.get('/', async (req, res, next) => {
+//   try {
+//     const projection = {
+//       title: 1,
+//       directedBy: 1,
+//       thumbnailImages: 1,
+//     }
+
+//     const films = await FilmFr.find({}, projection)
+//     res.json(films)
+//   } catch (error) {
+//     next(error)
+//   }
+// })
 router.get('/', async (req, res, next) => {
   try {
     const films = await FilmFr.find()
@@ -15,7 +43,6 @@ router.get('/', async (req, res, next) => {
     next(error)
   }
 })
-
 // @desc   Get one Film
 // @route  GET /api/Films/:id
 // @access Public
